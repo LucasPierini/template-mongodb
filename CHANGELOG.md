@@ -9,8 +9,8 @@ e tenta aderir à [*Semantic Versioning*](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
 
-## [0.0.1] - 2023-06-15
+## [0.0.1] - 2024-04-04
 
 ## Added
 
-- Arquivo "CHANGELOG" adicionado.
+- Projeto criado.
