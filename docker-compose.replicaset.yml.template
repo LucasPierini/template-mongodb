@@ -1,40 +1,23 @@
 services:
 
-  # Banco MongoDB local, usado para testes.
+  # Container MongoDB com Replicaset (singlenode)
   mongodb:
-    container_name: ${COMPOSE_PROJECT_NAME}-mongodb
-    image: mongo:${MONGO_VERSION}
-    entrypoint:
-      - /bin/bash
-      - -c
-      - |
-        if [ ! -d /data/keyfile ]
-          then mkdir /data/keyfile;
-        fi
-        if [ ! -f /data/keyfile/keyfile ];
-          then echo 'Gerando keyfile...';
-          openssl rand -base64 756 > /data/keyfile/keyfile;
-          chmod 400 /data/keyfile/keyfile;
-        fi
-        mongod --replSet rs0 --bind_ip_all --port ${MONGO_PORT} --keyFile /data/keyfile/keyfile
+    container_name: mongodb
+    image: docker.io/bitnami/mongodb:${MONGO_VERSION}
     hostname: ${MONGO_HOSTNAME}
-    healthcheck:
-      test: |
-        test $$(mongosh --quiet -u ${MONGO_USERNAME} -p ${MONGO_PASSWORD} --eval "try { \
-          rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: '${MONGO_HOSTNAME}' }] }).ok \
-        } catch (_) { \
-          rs.status().ok \
-        }") -eq 1
-      interval: 10s
-      start_period: 30s
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      - MONGODB_ADVERTISED_HOSTNAME=${MONGO_HOSTNAME}
+      - MONGODB_REPLICA_SET_MODE=primary
+      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+      - MONGODB_ROOT_USER=${MONGO_USERNAME}
+      - MONGODB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGODB_PORT_NUMBER=${MONGO_PORT}
+    extra_hosts:
+      - ${MONGO_HOSTNAME}:host-gateway
     ports:
       - ${MONGO_PORT}:${MONGO_PORT}
-    restart: always
     volumes:
-      - mongo-volume:/data/db
+      - mongodb-volume:/bitnami/mongodb
 
 volumes:
-  mongo-db-volume:
+  mongodb-volume:
